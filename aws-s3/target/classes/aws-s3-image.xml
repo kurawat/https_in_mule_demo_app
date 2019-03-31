@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" xmlns:metadata="http://www.mulesoft.org/schema/mule/metadata" xmlns:tracking="http://www.mulesoft.org/schema/mule/tracking" xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:json="http://www.mulesoft.org/schema/mule/json" xmlns:email="http://www.mulesoft.org/schema/mule/email" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:s3="http://www.mulesoft.org/schema/mule/s3" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/s3 http://www.mulesoft.org/schema/mule/s3/current/mule-s3.xsd
+http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd
+http://www.mulesoft.org/schema/mule/tracking http://www.mulesoft.org/schema/mule/tracking/current/mule-tracking.xsd
+http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd">
+    <flow name="aws-s3-Show-Image-Flow">
+        <http:listener config-ref="HTTPx_Listener_Configuration" path="/ShowS3FileContent" allowedMethods="GET" doc:name="HTTP - Show File Content Listener"/>
+        <logger message="File Name: #[message.inboundProperties.'http.query.params'.imagename]" level="INFO" doc:name="Logger - Print File Name"/>
+        <set-variable variableName="ImageName" value="#[message.inboundProperties.'http.query.params'.filename]" doc:name="Variable - Image Name"/>
+        <s3:get-object-content config-ref="Amazon_S3__Configuration" bucketName="${aws.s3.bucketname}" key="#[flowVars.ImageName]" doc:name="Amazon S3 - Get File Content"/>
+        <object-to-byte-array-transformer mimeType="image/jpeg" doc:name="Object to Byte Array"/>
+        <catch-exception-strategy doc:name="Catch Exception Strategy">
+            <logger message="Inside Exception: #[flowVars.ImageName]" level="INFO" doc:name="Logger - Inside Exception"/>
+            <http:request config-ref="HTTP_Request_Configuration" path="/ListS3Bucket/${aws.s3.bucketname}" method="GET" doc:name="HTTP - List Bucket API"/>
+            <dw:transform-message doc:name="Transform Message" metadata:id="e6b60949-1367-4273-a6df-bdfed5a6876e">
+                <dw:input-payload mimeType="application/json"/>
+                <dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+{
+	AvailableFiles: payload.FileList.FileName
+}]]></dw:set-payload>
+            </dw:transform-message>
+            <logger message="End" level="INFO" doc:name="Logger"/>
+        </catch-exception-strategy>
+    </flow>
+</mule>

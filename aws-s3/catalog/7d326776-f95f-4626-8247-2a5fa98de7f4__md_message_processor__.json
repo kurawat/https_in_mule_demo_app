@@ -1,0 +1,16 @@
+{
+    "inputMessageMetadata": {
+        "messagePayload": {
+            "connectorName": "#_custom_mule_metadata_type_#",
+            "typeId": "S3List"
+        }
+    },
+    "outputMessageMetadata": {
+        "messagePayload": {
+            "connectorName": "#_custom_mule_metadata_type_#",
+            "typeId": "S3Files"
+        }
+    },
+    "id": "7d326776-f95f-4626-8247-2a5fa98de7f4",
+    "version": "5.2.0.0"
+}

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:context="http://www.springframework.org/schema/context" xmlns:tls="http://www.mulesoft.org/schema/mule/tls" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:s3="http://www.mulesoft.org/schema/mule/s3" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/s3 http://www.mulesoft.org/schema/mule/s3/current/mule-s3.xsd
+http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-current.xsd
+http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd">
+
+
+    <s3:config name="Amazon_S3__Configuration" accessKey="${aws.accesskey}" secretKey="${aws.secretkey}" proxyHost="${aws.proxyhost}" proxyPort="${aws.proxyport}" doc:name="Amazon S3: Configuration"/>
+    <http:listener-config name="HTTPx_Listener_Configuration" host="${host.name}" port="${host.port}" doc:name="HTTP Listener Configuration" protocol="HTTPS">
+        <tls:context>
+            <tls:key-store type="${ssl.keystore.type}" path="${ssl.keystore.path}" alias="${ssl.keystore.alias}" keyPassword="${ssl.keystore.keypassword}" password="${ssl.keystore.password}"/>
+        </tls:context>
+    </http:listener-config>
+    <http:request-config name="HTTP_Request_Configuration" host="${api.host.name}" port="${api.host.port}" doc:name="HTTP Request Configuration" protocol="HTTPS">
+        <tls:context>
+            <tls:trust-store path="${ssl.truststore.path}" password="${ssl.truststore.password}" type="${ssl.truststore.type}"/>
+        </tls:context>
+    </http:request-config>
+    <context:property-placeholder location="config-${ENV}.properties"/>
+
+</mule>
