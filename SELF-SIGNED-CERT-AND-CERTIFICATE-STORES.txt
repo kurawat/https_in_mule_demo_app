@@ -1,0 +1,38 @@
+--
+-- GENERATE PRIVATE KEY
+--
+openssl genrsa -out mysite.key 4096
+
+--
+-- CREATE CSR
+--
+openssl req -new -key mysite.key -out mysite.csr
+
+--
+-- GENERATE SELF-SIGNED CERTIFICATE
+--
+openssl x509 -req -days 365 -in mysite.csr -signkey mysite.key -out mysite.crt
+
+--
+-- CREATE .PEM FILE FOR PRIVATE-KEY-ENTRY
+--
+cat mysite.key > server.pem 
+cat mysite.crt >> server.pem 
+** Please note that in .pem file certifiate entry should start from new line
+   if not then please edit the file in some editor and correct
+
+--
+-- CREATE KEYSTORE IN PKCS12 FORMAT
+--
+openssl pkcs12 -export -in server.pem -name ksrawatKey -out keystore.pkcs12
+
+--
+-- CONVERT KEYSTORE FROM PKCS12 TO JKS FORMAT
+--
+keytool -importkeystore -srckeystore keystore.pkcs12 -srcstoretype pkcs12 -srcalias ksrawatkey -destkeystore keystore.jks -deststoretype jks -deststorepass changeit -destalias ksrawatkey
+
+
+--
+-- CREATE TRUST/CERT STORE
+--
+keytool -import -trustcacerts -keystore cacerts -storepass changeit -alias Root -import -file mysite.crt
